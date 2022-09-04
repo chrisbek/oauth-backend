@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "tcp-backend"
+version = "0.1.0"
+description = ""
+authors = ["Christophoros Bekos <bekos.christopher@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+boto3 = "1.21.8"
+rollbar = "0.16.2"
+pydantic = "1.9.0"
+fastapi = "0.74.1"
+mangum = "0.13.0"
+botocore = "1.24.8"
+dependency-injector = "4.39.1"
+numpy = "^1.22.2"
+google-auth = "^2.6.0"
+PyJWT = {extras = ["crypto"], version = "^2.3.0"}
+identity-provider-rest-client = {git = "https://github.com/chrisbek/identity-provider-client.git", rev = "1.0.1"}
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.1"
+pydevd-pycharm = "~=213.7172.26"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

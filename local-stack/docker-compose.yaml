@@ -1,0 +1,19 @@
+version: '3.7'
+
+services:
+    frontend-service:
+        container_name: frontend_service
+        working_dir: /frontend_service
+        image: frontend-service:base
+        volumes:
+            - ../:/frontend_service
+        networks:
+            main-net:
+                ipv4_address: 172.30.1.2
+        # For python with serverless offline we need --functionCleanupIdleTimeSeconds. Check: https://github.com/dherault/serverless-offline/issues/1027
+        command: bash -c "cp ./serverless.yml.local serverless.yml -v && /frontend_service/node_modules/serverless/bin/serverless.js offline start --functionCleanupIdleTimeSeconds 5"
+
+
+networks:
+    main-net:
+        external: true

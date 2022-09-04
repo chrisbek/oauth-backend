@@ -1,0 +1,92 @@
+service: authentication-server
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: eu-west-1
+  deploymentBucket:
+    blockPublicAccess: true
+  lambdaHashingVersion: 20201221
+  environment:
+    PLATFORM: 'local'
+    STAGE: 'dev'
+    LOG_LEVEL: ${file(.env.yml):LOG_LEVEL}
+    REGION: ${self:provider.region}
+    ROLLBAR_ENVIRONMENT: local
+    ROLLBAR_ENABLED: false
+    ROLLBAR_TOKEN: ${file(.env.yml):ROLLBAR_TOKEN}
+    AUTH_TABLE: Auth-${self:provider.environment.STAGE}
+    BACKEND_URL: https://authentication.local/
+    IDENTITY_PROVIDER_TIMEOUT: 3
+    IDENTITY_PROVIDER_URL: http://identity-provider.local
+    PRIVATE_KEY: ${file(./oauth_keys/key)}
+    AUTHENTICATION_ROUTE_PREFIX: auth
+    AUTHORIZATION_ROUTE_PREFIX: oauth2
+    CLIENT_ID: ${file(.env.yml):CLIENT_ID}
+    CLIENT_SECRET: ${file(.env.yml):CLIENT_SECRET}
+    DYNAMODB_LOCAL_URL: http://dynamodb.local:8088
+    AWS_ACCESS_KEY_ID: dummy  # A dummy value is required from the boto3 for the dynamodb connection
+    AWS_SECRET_ACCESS_KEY: dummy  # A dummy value is required from the boto3 for the dynamodb connection
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+#            - dynamodb:CreateTable
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - 'arn:aws:dynamodb:${self:provider.environment.REGION}:*:table/${self:provider.environment.AUTH_TABLE}'
+            - 'arn:aws:dynamodb:${self:provider.environment.REGION}:*:table/${self:provider.environment.AUTH_TABLE}/index/*'
+
+custom:
+  serverless-offline:
+    httpPort: 80
+    host: 0.0.0.0
+  logRetentionInDays: 14
+  dynamodb:
+    stages: dev
+    start:
+      host: "dynamodb.local" # or the name of your Dynamo docker container
+      port: "8088"
+      noStart: true
+      migrate: true # in order to create tables
+  pythonRequirements:
+    usePoetry: false
+
+resources:
+  Resources:
+    AuthTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${self:provider.environment.AUTH_TABLE}
+        AttributeDefinitions:
+          - AttributeName: "State"
+            AttributeType: "S"
+        KeySchema:
+          - AttributeName: "State"
+            KeyType: "HASH"
+        BillingMode: PAY_PER_REQUEST
+
+functions:
+  app:
+    handler: app.main.handler
+    events:
+      - http: ANY /
+      - http: 'ANY /{proxy+}'
+    iamRoleStatementsName: auth-rest-handler-role
+    iamRoleStatementsInherit: true
+
+
+plugins:
+  - serverless-dynamodb-local
+  - serverless-python-requirements
+  - serverless-plugin-log-retention
+  - serverless-iam-roles-per-function
+  - serverless-offline

@@ -1,0 +1,21 @@
+{
+  "name": "authentication-server",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "serverless": "^2.71.0",
+    "serverless-domain-manager": "^5.2.0",
+    "serverless-dynamodb-local": "^0.2.40",
+    "serverless-iam-roles-per-function": "^3.2.0",
+    "serverless-offline": "^8.3.1",
+    "serverless-offline-python": "^3.14.2",
+    "serverless-plugin-log-retention": "^2.0.0",
+    "serverless-prune-plugin": "^2.0.1",
+    "serverless-python-requirements": "^5.2.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
